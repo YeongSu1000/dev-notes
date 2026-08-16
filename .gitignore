@@ -1,0 +1,6 @@
+# 인텔리제이 설정 제외
+.idea/
+
+# sql 폴더 외 다른 md 파일 제외
+guide/*.md
+network/*.md
