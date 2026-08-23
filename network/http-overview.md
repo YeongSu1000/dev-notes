@@ -489,7 +489,7 @@ HTTP 메시지를 처리할 수 있음
     - 즉, `Header 이름 + 그 Header가 의미하는 것`에 대한 약속이 필요하다.
 - **Header + 의미에 대한 약속 = HTTP를 확장하는 방법**
 
-## HTTP는 상태가 없지만 세션은 있습니다
+### HTTP는 상태가 없지만 세션은 있습니다
 > HTTP는 상태를 저장하지 않습니다(Stateless). 동일한 연결 상에서 연속하여 전달된 두 개의 요청 사이에는 연결고리가 없습니다. 이는 e-커머스 쇼핑 바구니처럼, 일관된 방식으로 사용자가 페이지와 상호작용하길 원할 때 문제가 됩니다. 하지만, HTTP의 핵심은 상태가 없는 것이지만 **HTTP 쿠키는 상태가 있는 세션을 만들도록 해줍니다**. 헤더 확장성을 사용하여, 동일한 컨텍스트 또는 동일한 상태를 공유하기 위해 각각의 요청들에 세션을 만들도록 HTTP 쿠키가 추가됩니다.
 - **상태**: 서버가 이전에 일어난 일을 기억하고 있는 정보
   - Stateless: HTTP 프로토콜 자체가 각각의 요청을 이전 요청과 자동으로 연결해서 상태를 유지하지 않는다.
@@ -565,7 +565,7 @@ Cookie 등을 이용해 Session ID 전달
 여러 요청을 같은 사용자/상태와 연결
 ```
 
-## HTTP와 연결
+### HTTP와 연결
 >**연결은 전송 계층에서 제어**되므로 근본적으로 HTTP 영역 밖입니다. HTTP는 연결될 수 있도록 하는 근본적인 전송 프로토콜을 요구하지 않습니다. 다만 그저 신뢰할 수 있거나 메시지 손실이 없는(최소한의 오류는 표시) 연결을 요구할 뿐입니다. 인터넷 상의 가장 일반적인 두 개의 전송 프로토콜 중에서 TCP는 신뢰할 수 있으며 UDP는 그렇지 않습니다. 그러므로 **HTTP는 연결이 필수는 아니지만 연결 기반인 TCP 표준에 의존**합니다.
 - **연결은 전송 계층에서 제어**
   - HTTP와 TCP는 서로 다른 역할
@@ -662,6 +662,8 @@ Cookie 등을 이용해 Session ID 전달
   - HTTP/3에서 사용된다.
   - 자세한 내용은 이후 네트워크/HTTP 버전을 공부할 때 다룬다.
 
+---
+
 ## HTTP로 제어할 수 있는 것
 >HTTP의 확장 가능한 특성은 수년 간에 걸쳐 웹의 점점 더 많은 기능들을 제어하도록 허용되어 왔습니다. 캐시 혹은 인증 메서드는 HTTP에 초기부터 제어해왔던 기능이며, 반면에 origin 제약사항을 완화시키는 조치는 2010년에 들어서 추가되었습니다.
 
@@ -749,11 +751,424 @@ Cookie 등을 이용해 Session ID 전달
 | **프록시**    | HTTP 메시지를 중간에서 처리/전달                |
 | **세션**     | Cookie 등을 이용해 여러 HTTP Request를 연결   |
 
+---
+
 ## HTTP 흐름
+>클라이언트가 서버와 통신하고자 할 때, 최종 서버가 됐든 중간 프록시가 됐든 다음 단계의 과정을 수행합니다.
 
+> 1. TCP 연결을 엽니다. TCP 연결은 요청을 보내거나(혹은 여러 개의 요청) 응답을 받는데 사용됩니다. 클라이언트는 새 연결을 열거나, 기존 연결을 재사용하거나, 서버에 대한 여러 TCP 연결을 열 수 있습니다.
+> 
+> 
+> 2. HTTP 메시지를 전송합니다. HTTP 메시지(HTTP/2 이전)는 인간이 읽을 수 있습니다. HTTP/2에서는 이런 간단한 메시지가 프레임 속으로 캡슐화되어 직접 읽는게 불가능하지만 원칙은 동일합니다.
+  > ```HTTP
+  > GET / HTTP/1.1
+  > Host: developer.mozilla.org
+  > Accept-Language: fr
+  > ```  
+> 3. 서버에 의해 전송된 응답을 읽어들입니다.
+  > ```HTTP
+  > HTTP/1.1 200 OK
+  > Date: Sat, 09 Oct 2010 14:28:02 GMT
+  > Server: Apache
+  > Last-Modified: Tue, 01 Dec 2009 20:18:22 GMT
+  > ETag: "51142bc1-7449-479b075b2891b"
+  > Accept-Ranges: bytes
+  > Content-Length: 29769
+  > Content-Type: text/html
+  >    
+  > <!DOCTYPE html... (here comes the 29769 bytes of the requested web page) 
+  > ```
+> 4. 연결을 닫거나 다른 요청들을 위해 재사용합니다.
 
+> HTTP 파이프라이닝이 활성화되면, 첫번째 응답을 완전히 수신할 때까지 기다리지 않고 여러 요청을 보낼 수 있습니다. HTTP 파이프라이닝은 오래된 소프트웨어와 최신 버전이 공존하고 있는, 기존의 네트워크 상에서 구현하기 어렵다는게 입증되었으며, 프레임안에서 보다 활발한 다중 요청을 보내는 HTTP/2로 교체되고 있습니다.
 
+**Request**
+```text
+HTTP Request
+│
+├── Request Line
+│     └── GET / HTTP/1.1
+│
+├── Headers
+│     ├── Host: ...
+│     └── Accept-Language: ...
+│
+└── Body (있을 수도 있음)
+```
+↓<br>
+**서버가 처리**<br>
+↓<br>
+**Response**
+```text
+HTTP Response
+│
+├── Status Line
+│     └── HTTP/1.1 200 OK
+│
+├── Headers
+│     ├── Content-Type: text/html
+│     └── Content-Length: ...
+│
+└── Body
+      └── <!DOCTYPE html>...
+```
 
+---
 
+## HTTP 메시지
+>HTTP/1.1과 초기 HTTP 메시지는 사람이 읽을 수 있습니다. HTTP/2에서, 이 메시지들은 새로운 이진 구조인 프레임 안에 포함되어, 헤더의 압축과 다중화와 같은 최적화를 가능케 합니다. 본래의 HTTP 메시지의 일부분만이 이 버전의 HTTP 내에서 전송된다고 할지라도, 각 메시지의 의미들은 변화하지 않으며 클라이언트는 본래의 HTTP/1.1 요청을 (가상으로) 재구성합니다. 그러므로 HTTP/1.1 포맷 내에서 HTTP/2를 이해하는 것은 여전히 유용합니다.
 
+>HTTP 메시지의 두 가지 타입인 요청(requests)과 응답(responses)은 각자의 고유한 형식을 가지고 있습니다.
 
+> ### 요청
+> 요청은 다음의 요소들로 구성됩니다.
+> ![Request image](https://mdn.github.io/shared-assets/images/diagrams/http/overview/http-request.svg)
+> - HTTP 메서드. 보통 클라이언트가 수행하고자 하는 동작을 나타냅니다 GET, POST, OPTIONS, HEAD 등이 있습니다. 일반적으로, 클라이언트는 리소스를 가져오거나(GET을 사용하여) HTML 폼의 데이터를 전송(POST를 사용하여)하려고 하지만, 다른 경우에는 다른 동작이 요구될 수도 있습니다.
+> - 가져오려는 리소스의 경로(Path). 리소스 URL에서 프로토콜 (http://), 도메인 (여기서는 developer.mozilla.org), TCP 포트 (여기서는 80)와 같은 요소들을 제외한 부분입니다.
+> - HTTP 프로토콜의 버전.
+> - 서버에 대한 추가 정보를 전달하는 선택적 헤더들.
+> - POST와 같은 일부 메서드에서는 전송할 리소스를 담고 있는 body 가 포함될 수 있습니다.
+- 요청의 구성요소
+  ```text
+  HTTP Request
+  │
+  ├── ① Method
+  ├── ② Path
+  ├── ③ HTTP Version
+  ├── ④ Headers
+  └── ⑤ Body (있을 수도 있음)
+  ```
+1. **HTTP Method**
+   - 클라이언트가 서버에게 어떤 종류의 작업을 요청하는지를 나타내는 것
+   - `GET /users` = `/users` 라는 리소스를 가져오고 싶다.
+   - `POST /users` = `/users` 에 데이터를 전달하여 서버에 어떤 처리를 요청한다.
+2. **Path**
+   - 가져오려는 리소스의 경로
+   - 리소스: 서버가 제공하거나 다루는 대상
+   - 예를 들어 아래와 같은 것들이 HTTP 관점에서 리소스를 가리키는 주소가 될 수 있다.
+   ```text
+   /users
+   /users/10
+   /products
+   /products/123
+   /images/cat.jpg
+    ```
+    - Path와 URL은 같은 것이 아니다.
+    ```text
+    http://developer.mozilla.org:80/users
+    └───────┬────────────┘ 
+       Request에 직접 쓰는            /users
+       Path 부분이 아님                 ↑
+     (프로토콜, 도메인, TCP 포트 등)    Path
+    ```
+3. **HTTP 프로토콜 버전**
+   - 이 Request가 어떤 HTTP 버전의 규칙을 따르는지를 나타낸다.
+4. **Headers**
+   - Request나 Response에 대한 추가적인 정보를 전달하는 부분
+   - Header가 여러 개 있을 수 있다.
+   ```text
+   Request
+   ├── Method
+   ├── Path
+   ├── Version
+   └── Headers
+        ├── Host
+        ├── Accept
+        ├── Cookie
+        └── ...
+    ```
+5. **Body**
+   - Request Body는 클라이언트가 서버에게 함께 전달하는 실제 데이터가 들어가는 부분이다.
+    ```text
+    POST /users HTTP/1.1 ────────────→ Request Line
+    Content-Type: application/json ──→ Header
+      
+    {
+      "name": "영수",
+      "age": 20
+    }                     ───────────→ Body
+    ```
+   - 모든 Request가 Body를 가지는 것은 아니다.
+     
+  - Request의 전체 구조
+    ```text
+    HTTP Request
+    │
+    ├── Request Line
+    │     ├── Method → GET / POST / PUT / DELETE ...
+    │     ├── Path → /users
+    │     └── Version → HTTP/1.1
+    │
+    ├── Headers
+    │     ├── Host
+    │     ├── Content-Type
+    │     └── Cookie
+    │
+    └── Body
+          └── 서버에 전달할 데이터
+              (필요한 경우)
+    ```
+### 응답
+> 응답은 다음의 요소들로 구성됩니다.
+> ![response image](https://mdn.github.io/shared-assets/images/diagrams/http/overview/http-response.svg)
+> - HTTP 프로토콜의 버전
+> - 요청의 성공 여부와 그 이유를 나타내는 상태 코드
+> - **상태 코드에 영향을 주지 않는**, 상태 코드의 짧은 설명을 나타내는 상태 메시지
+> - 요청 헤더와 유사한, HTTP 헤더들
+> - 선택적으로 가져온 리소스를 포함하는 Body
+
+1. **HTTP 프로토콜 버전**
+    ```
+    Request
+    → HTTP/1.1을 사용해서 요청
+    
+    Response
+    → HTTP/1.1을 사용해서 응답
+    ```
+2. **상태 코드**(Status Code)
+    - 서버가 클라이언트의 요청을 처리한 결과를 숫자로 표현한 것.
+    - **서버가 요청을 처리한 결과가 어떻게 됐는지** 알려주는 핵심 정보다.
+    - 대표적인 예시
+    ```text
+    200 → 성공
+    404 → 요청한 리소스를 찾을 수 없음
+    400 → 잘못된 요청
+    500 → 서버 내부에서 문제가 발생
+    ```
+3. **상태 메시지**
+    ```text
+    HTTP/1.1 200 OK
+                 ↑
+           상태 메시지
+           
+    HTTP/1.1 404 Not Found
+                 ↑
+           상태 메시지       
+    ```
+    - 위에서 `200`, `404`가 상태 코드이고 `OK`, `Not Found`가 상태 메시지다.
+    - **상태 코드에 영향을 주지 않는**: 실제로 중요한건 숫자로 된 상태 코드인 `200`, `404`이고, `OK`, `Not Found` 같은 문구 자체는 핵심적인 판단 기준이 아니다.
+       ```text
+      200
+      ↓
+      기계가 이해하고 처리하는 상태 정보
+      
+      OK
+      ↓
+      상태 코드를 사람이 읽기 쉽게 설명하는 텍스트
+      ```
+      
+4. **HTTP Header**
+    - Response 에도 Header가 존재한다.
+    - Request 에만 존재하는게 아니다.
+   ```text
+    HTTP
+    │
+    ├── Request
+    │     └── Headers
+    │
+    └── Response
+           └── Headers
+    ```
+   - **Response Header가 필요한 이유**
+     - 서버가 `<h1>Hello</h1>`를 보내면 브라우저 입장에서는 HTML인지 그냥 텍스트인지 정보가 필요하다.
+     - 그래서 서버가 `Content-Type: text/html` 로 정보를 알려줄 수 있다.
+5. **Response Body**
+    - 서버가 실제로 클라이언트에게 전달하려는 데이터가 들어가는 부분.
+    ```html
+    HTTP/1.1 200 OK
+    Content-Type: text/html
+    
+    <!DOCTYPE html>   ───────┐ 
+    <html>                   │
+        <body>               │  Response Body
+            Hello            │
+        </body>              │
+    </html>           ───────┘
+    ```
+
+    ```text
+    HTTP Response
+    │
+    ├── Status Line
+    │     ├── Version
+    │     ├── Status Code
+    │     └── Status Message
+    │
+    ├── Headers
+    │
+    └── Body
+    └── 실제 데이터
+    ```
+   - HTML 뿐만 아니라 JSON, Image 등 다양한 데이터가 들어갈 수 있다.
+
+---
+
+## HTTP 기반 API
+> HTTP 기반으로 가장 널리 사용되는 **API**중 하나는 user agent와 서버간에 데이터를 교환할 수 있게 해주는 **XMLHttpRequest API** 입니다. 최신 **Fetch API**는 보다 강력하고 유연한 기능을 제공합니다.
+- **API**
+  - 프로그램이 다른 프로그램의 기능이나 데이터를 사용할 수 있도록 정해놓은 인터페이스
+- **HTTP 기반 API**
+  - HTTP를 이용해서 프로그램끼리 데이터를 주고받는 API
+- **XMLHttpRequest API**
+  - 브라우저의 JavaScript가 페이지 전체를 새로고침하지 않고 서버에 HTTP Request를 보내고 Response를 받을 수 있도록 해주는 기능
+- **Fetch API**
+  - 브라우저의 JavaScript가 HTTP Request를 보내고 Response를 받을 수 있게 해주는 API
+  - JavaScript에서 `fetch("/users")` 라고 하면 대략 아래와 같은 일이 일어난다.
+    ```text
+    JavaScript
+       │
+       │ fetch("/users")
+       ▼
+    HTTP Request
+       │
+       ▼
+    서버
+       │
+       │ HTTP Response
+       ▼
+    JavaScript
+    ```
+    - `fetch()` 자체가 HTTP는 아니다.
+    ```text
+    Fetch API
+       ↓
+    HTTP를 이용해서
+    Request / Response를 주고받음
+    ```
+    
+> 또 다른 API인 **서버-전송 이벤트**는 서버가 전송 메커니즘으로 HTTP를 사용하여, 클라이언트로 이벤트를 보낼 수 있도록 하는 **단방향 서비스**입니다. 
+- **서버-전송 이벤트**(Server-Sent Events)
+  - 서버가 클라이언트에게 계속 이벤트를 보내는 것이 가능하다.
+  - SSE는 서버와 연결을 유지하면서 **서버가 이벤트를 계속 보내는 방식**이다.
+    ```text
+    클라이언트
+       │
+       │ 연결
+       ▼
+    서버
+       │
+       ├── 이벤트 1 ──→ 클라이언트
+       ├── 이벤트 2 ──→ 클라이언트
+       ├── 이벤트 3 ──→ 클라이언트
+       └── 이벤트 4 ──→ 클라이언트
+    ```
+- **단방향**
+  - `서버 → 클라이언트` 서버가 클라이언트에게 계속 이벤트를 보내는 것이다.
+  - `서버 ← 클라이언트` 방향으로 SSE 이벤트를 보내는 것은 아니다.
+  - Server-Sent Events = 서버 → 클라이언트 방향의 이벤트 전달이라고 생각하면 된다.
+
+> 클라이언트는 **EventSource** 인터페이스를 사용하여, 연결을 맺고 이벤트 핸들러를 설정합니다. 클라이언트 브라우저는 HTTP 스트림으로 도착한 메시지를 적절한 Event 객체로 자동 변환하여, 알려진 경우 해당 이벤트 type에 대해 등록된 이벤트 핸들러로 전달하거나 또는 특정 유형의 이벤트가 설정되지 않은 경우에는 onmessage 이벤트 핸들러로 전달합니다.
+
+- **EventSource**
+  - 브라우저에서 Server-Sent Events 연결을 만들고 서버가 보내는 이벤트를 받을 수 있게 해주는 인터페이스
+  - 대략 아래와 같이 사용한다.
+   ```JavaScript
+   const source = new EventSource("/events");
+    
+   source.onmessage = (event) => {
+       console.log(event.data);
+   };
+   ```
+  - 그러면 다음과 같은 식으로 동작할 수 있다.
+   ```text
+   JavaScript
+      │
+      │ EventSource
+      ▼
+   서버와 연결
+      │
+      │ 이벤트
+      ├────────→
+      │ 이벤트
+      ├────────→
+      │ 이벤트
+      └────────→
+   ```
+
+- **핵심**
+    ```text
+    HTTP
+     ↓
+    프로그램끼리 데이터 통신에도 사용됨
+     ↓
+    HTTP Request / Response
+    ```
+    
+    ```text
+    Fetch API
+    → JavaScript에서 HTTP 통신을 하기 위한 브라우저 API
+    ```
+    
+    ```text
+    SSE
+    → HTTP를 이용해서
+       서버가 클라이언트에게 이벤트를 계속 보내는 방식
+    ```
+  - **REST API와의 관계**
+    - REST라는 설계 원칙을 따르는 API
+    - 웹에서는 주로 HTTP를 이용해 구현한다.
+    - Fetch API 와 REST API는 서로 다른 개념이다.
+      ```text
+      Fetch API
+      → 브라우저 JavaScript에서 HTTP 요청을 보내는 도구
+    
+      REST API
+      → HTTP를 이용해 서버의 리소스를 어떻게 설계하고
+         요청/응답할지에 대한 방식
+      ```
+
+---
+
+## 결론
+> **HTTP는 사용이 쉬운 확장 가능한 프로토콜**입니다. 헤더를 쉽게 추가하는 능력을 지닌 **클라이언트-서버** 구조는 HTTP가 웹의 확장된 수용력과 함께 발전할 수 있게 합니다.
+
+> HTTP/2가 성능 향상을 위해 HTTP 메시지를 프레임 내로 임베드하여 약간의 복잡함을 더했을지라도, 애플리케이션의 관점에서 볼 때, 메시지의 기본적인 구조는 HTTP/1.0이 릴리즈된 이후와 동일합니다. 세션의 흐름은 여전히 단순하여, 간단한 HTTP 메시지 모니터를 이용한 조사와 디버그를 가능하게 해줍니다.
+
+1. **HTTP란**
+    ```text
+    HTTP
+    ↓
+    클라이언트와 서버가 데이터를 주고받기 위한
+    애플리케이션 계층의 프로토콜
+    ```
+
+2. **기본 구조**
+    ```text
+    클라이언트
+       │
+       │ HTTP Request
+       ▼
+    서버
+       │
+       │ HTTP Response
+       ▼
+    클라이언트
+    ```
+3. **Request**
+    ```text
+    Request
+    ├── Method
+    │     └── GET / POST / PUT / DELETE ...
+    │
+    ├── Path
+    │     └── /users/10
+    │
+    ├── Headers
+    │     └── 추가 정보
+    │
+    └── Body
+          └── 전달할 데이터 (필요한 경우)
+    ```
+4. **Response**
+    ```text
+    Response
+    ├── Status Code
+    │     └── 200 / 404 / 500 ...
+    │
+    ├── Headers
+    │     └── 추가 정보
+    │
+    └── Body
+          └── 서버가 전달하는 데이터
+    ```
+   
